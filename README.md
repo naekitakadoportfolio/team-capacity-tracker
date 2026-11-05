@@ -10,30 +10,61 @@
 
 # Team Capacity Tracker
 
-Shows how much creative capacity a team really has, how output is trending by pipeline, and who the top performers are over a rolling window. Toggle departed editors to see phantom capacity disappear.
+A multi-page capacity planner for creative teams. It shows true weekly editor capacity, lets managers assign holds on a board with over-capacity warnings, tracks output by pipeline quarter over quarter, ranks Best Bets over a rolling window, and runs data audits that catch phantom capacity and over-counted metrics.
 
-> **Portfolio rebuild.** This is a from-scratch recreation of a production system I designed and run, rebuilt with **fictional data** and no client names, code or branding. The live demo runs entirely in the browser.
+> **Portfolio rebuild.** A from-scratch recreation of a production system I designed and run. It uses **fictional people and data**, with no client names, code or branding.
 
-## The problem
-Managers assigned creative holds without a reliable view of editor capacity. Departed editors still showed up as available because of status gaps, substring field matching inflated output numbers, and triggers ran in the wrong timezone.
+## ✨ Features
+- **Overview:** editors counted, weekly capacity, assigned load, open holds, utilisation bars and a needs-attention list
+- **Weekly board:** columns per editor, move holds between editors, over-capacity confirmation, create new holds (validated)
+- **Editors:** edit capacity, add editors (duplicate and range checks), mark departed (their holds return to Unassigned automatically)
+- **Pipeline output:** quarter picker, change per pipeline and a grouped SVG chart
+- **Best Bets:** rolling-window slider, average pace, utilisation and 8-week sparklines
+- **Data audit:** phantom-capacity detector with one-click fix, substring vs exact field-match check, trigger timezone check
+- **Settings:** snapshot timezone and time, exclude departed editors, default window
+- **Activity log**, persisted state, light/dark theme
 
-## Impact in production
-A trusted capacity view: phantom capacity removed, output metrics cleaned up, quarter-over-quarter comparisons by pipeline, and rolling Best Bets windows to guide assignments.
+## 🧭 Try it
+1. Open the **[live demo](https://naekitakadoportfolio.github.io/team-capacity-tracker/)**. Dan has departed but still holds work.
+2. Open *Data audit* → **Fix now**, then look at the *Weekly board*
+3. Move a hold onto a full editor to see the capacity warning
 
-## What it demonstrates
-| Capability | How |
-|---|---|
-| Capacity modeling | Editors × weekly capacity vs assigned load |
-| Data integrity | Departed-editor exclusion, exact field matching |
-| Trend analysis | Quarter-vs-quarter output by pipeline |
-| Rolling metrics | Configurable Best Bets window |
-| Feasibility audits | Discovery script to check data before building |
+## 🏗 Production architecture
+| Layer | Production | This demo |
+|---|---|---|
+| Data | Project-tool API → daily Sheets snapshot | Seeded editors & holds |
+| Jobs | Time-driven trigger in the team's timezone | Settings page |
+| Discovery | `Discovery.gs` feasibility audits before building metrics | Data audit page |
+| UI | `WebApp.gs` + `Dashboard.html` | Static SPA |
 
-## Production architecture
-WebApp.gs + Dashboard.html · time-driven trigger in the correct timezone · project-tool API → Sheets snapshot · Discovery.gs for data feasibility audits
+## 📁 Project structure
+```
+team-capacity-tracker/
+├── index.html        # built app (shell + app code, single file)
+├── src/
+│   ├── app.js        # views, state seed, business logic
+│   └── app.json      # title, navigation, theme, storage key
+├── assets/banner.svg # README banner
+├── README.md
+└── LICENSE
+```
 
-## Try it
-Open the **[live demo](https://naekitakadoportfolio.github.io/team-capacity-tracker/)** or run `index.html` locally. No install needed.
+## 🚀 Run locally
+No build step is needed to run it. Open `index.html`, or serve the folder:
+```bash
+python3 -m http.server 8000   # then visit http://localhost:8000
+```
+`index.html` is generated from `src/` by a small shared shell (hash router, persisted state, modals, toasts, light/dark theme).
+
+## 🧩 Implementation notes
+- `counted()` excludes departed editors when the setting is on, which removes phantom capacity
+- Pipeline metrics use exact field matching, because substring matching double-counts variants like "UGC Remix"
+- Best Bets average = the last *n* weeks of each editor's history ÷ *n*
+
+## 🗺 Roadmap
+- Drag-and-drop on the board
+- Holiday-aware capacity per editor
+- Forecast of next week's open holds from the intake rate
 
 ---
 <p align="center"><sub>Built by <b>Nae Kitakado</b>, AI Automation Consultant · <a href="https://www.linkedin.com/in/nae-k-203194265">LinkedIn</a> · <a href="https://sider.ai/agents/web-creator/share/695ea81100a621619985fdfb">Portfolio</a> · open to retainer &amp; part-time consulting</sub></p>

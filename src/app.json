@@ -1,0 +1,3 @@
+{"title":"Team Capacity Tracker","brand":"CAPACITY TRACKER","theme":"glass","storageKey":"capDemo","appJs":"/home/claude/repos2/team-capacity-tracker/src/app.js","desc":"Editor capacity, weekly hold board, pipeline output trends and Best Bets",
+"css":".legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:4px}.legend span{margin-right:10px}",
+"nav":[["overview","🏠 Overview"],["board","🧩 Weekly board"],["editors","👥 Editors"],["pipelines","📊 Pipeline output"],["bestbets","🏆 Best Bets"],["audit","🧪 Data audit"],["settings","⚙️ Settings"],["activity","🔔 Activity"]]}
