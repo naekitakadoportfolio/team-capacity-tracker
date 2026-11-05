@@ -1,0 +1,48 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Team Capacity Tracker · Nae Kitakado</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--cocoa:#5B3A3A;--ink:#3E2A2F;--mauve:#8A6470;--blush:#FBE3EC;--pink:#F4B4CD;--rose:#F2A7C3;--card:#fff;--bg:#FDF4F7;--line:#F3D3DF}
+*{box-sizing:border-box}body{margin:0;font-family:'DM Sans',Inter,sans-serif;color:var(--ink);background:var(--bg)}
+.wrap{max-width:1080px;margin:0 auto;padding:24px 16px 48px}
+.hero{background:linear-gradient(120deg,var(--blush),var(--pink));border-radius:24px;padding:28px;position:relative;overflow:hidden}
+.hero:after{content:"";position:absolute;right:-60px;top:-60px;width:260px;height:260px;border-radius:50%;background:rgba(255,255,255,.3)}
+.tag{display:inline-block;background:#fff;color:var(--cocoa);font-size:12px;letter-spacing:.14em;font-weight:600;border-radius:99px;padding:4px 12px}
+h1{color:var(--cocoa);font-size:clamp(28px,5vw,44px);margin:10px 0 6px;font-weight:600}
+.hero p{margin:0;max-width:640px;position:relative;z-index:1}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:20px}@media(max-width:760px){.grid{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px}
+h2{font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--cocoa);margin:0 0 12px}
+label{font-size:13px;font-weight:600;color:var(--mauve);display:block;margin:10px 0 4px}
+select,textarea,input{width:100%;font:inherit;border:1px solid var(--line);border-radius:12px;padding:10px;background:#fff;color:var(--ink)}
+input[type=range],input[type=checkbox]{accent-color:var(--cocoa)}textarea{min-height:120px;resize:vertical}
+button{background:var(--cocoa);color:#fff;border:0;border-radius:99px;padding:11px 20px;font:inherit;font-weight:600;letter-spacing:.06em;cursor:pointer;margin-top:12px}
+button.ghost{background:#fff;color:var(--cocoa);border:1px solid var(--rose)}
+.pill{display:inline-block;border-radius:99px;padding:3px 10px;font-size:12px;font-weight:600;margin:2px}
+.high{background:#F9D0D6;color:#8A2C3A}.medium{background:#FCE6C8;color:#7A4E12}.low{background:#DDF1E4;color:#1E5A36}
+ul{padding-left:18px;margin:6px 0}li{margin:4px 0}li::marker{color:var(--rose)}
+table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;padding:7px 6px;border-bottom:1px solid var(--line)}th{color:var(--mauve)}
+.kpi{display:flex;gap:10px;flex-wrap:wrap}.kpi div{flex:1;min-width:120px;background:var(--blush);border-radius:14px;padding:12px}.kpi b{display:block;font-size:24px;color:var(--cocoa)}
+pre{background:#2E1F23;color:#FBE3EC;border-radius:12px;padding:12px;font-size:12px;overflow:auto;max-height:320px}
+footer{text-align:center;font-size:13px;color:var(--mauve);margin-top:28px}a{color:var(--cocoa)}
+.muted{color:var(--mauve);font-size:13px}
+</style></head><body><div class="wrap">
+<div class="hero"><span class="tag">LIVE DEMO</span><h1>Team Capacity Tracker</h1><p>Shows how much creative capacity a team really has, how output is trending by pipeline, and who the top performers are over a rolling window. Toggle departed editors to see phantom capacity disappear.</p></div><div class="grid"><div class="card"><h2>1 · Controls</h2>
+<label>Quarter</label><select id="q" onchange="draw()"><option>Q3 2026</option><option selected>Q4 2026</option></select>
+<label>Weekly capacity per editor (cards)</label><input id="cap" type="number" value="8" oninput="draw()">
+<label>Rolling window for Best Bets (weeks)</label><input id="w" type="range" min="2" max="8" value="4" oninput="wv.textContent=this.value;draw()"> <span id="wv" class="muted">4</span>
+<label style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="dep" style="width:auto" checked onchange="draw()"> Exclude departed editors (avoids phantom capacity)</label></div>
+<div class="card"><h2>2 · Team capacity</h2><div class="kpi" id="kpi"></div><div id="bars" style="margin-top:12px"></div></div></div>
+<div class="grid"><div class="card"><h2>Output by pipeline · quarter vs quarter</h2><table id="pipe"></table></div><div class="card"><h2>Best Bets (top performers, rolling window)</h2><table id="best"></table></div></div>
+<script>
+const $=i=>document.getElementById(i);
+const ED=[["Ava","active",[7,8,6,9,8,7,9,8]],["Ben","active",[5,6,6,5,7,6,5,6]],["Cara","active",[9,9,8,10,9,9,10,9]],["Dan","departed",[0,0,0,0,0,0,0,0]],["Eli","active",[4,5,3,6,5,4,6,5]]];
+const PIPE={"Q3 2026":{UGC:120,Testimonial:80,Product:95,Promo:60},"Q4 2026":{UGC:138,Testimonial:72,Product:110,Promo:85}};
+function draw(){const cap=+$("cap").value,w=+$("w").value,eds=ED.filter(e=>!$("dep").checked||e[1]=="active");const wk=eds.map(e=>e[2][7]),load=wk.reduce((a,b)=>a+b,0),tot=eds.length*cap;
+ $("kpi").innerHTML=`<div><b>${eds.length}</b>editors counted</div><div><b>${tot}</b>weekly capacity</div><div><b>${load}</b>assigned this week</div><div><b>${Math.max(0,tot-load)}</b>open holds</div>`;
+ $("bars").innerHTML=eds.map(e=>{const p=Math.min(100,e[2][7]/cap*100);return`<div style="margin:6px 0"><span>${e[0]}${e[1]=="departed"?' <span class="pill high">departed</span>':''}</span> <span class="muted">${e[2][7]}/${cap}</span><div style="background:var(--blush);border-radius:99px;height:12px"><div style="width:${p}%;height:12px;border-radius:99px;background:${p>=100?'#D9798F':'var(--cocoa)'}"></div></div></div>`}).join("");
+ const q=$("q").value,pq=q=="Q4 2026"?"Q3 2026":null;$("pipe").innerHTML="<tr><th>Pipeline</th><th>"+q+"</th><th>Change</th></tr>"+Object.keys(PIPE[q]).map(k=>{const c=pq?Math.round((PIPE[q][k]-PIPE[pq][k])/PIPE[pq][k]*100):0;return`<tr><td>${k}</td><td>${PIPE[q][k]}</td><td>${pq?`<span class="pill ${c>=0?'low':'high'}">${c>=0?'+':''}${c}%</span>`:'—'}</td></tr>`}).join("");
+ $("best").innerHTML="<tr><th>Editor</th><th>Avg cards/wk (last "+w+")</th><th>Utilisation</th></tr>"+eds.map(e=>[e[0],e[2].slice(-w).reduce((a,b)=>a+b,0)/w]).sort((a,b)=>b[1]-a[1]).map(([n,a],i)=>`<tr><td>${i==0?'🏆 ':''}${n}</td><td>${a.toFixed(1)}</td><td>${Math.round(a/cap*100)}%</td></tr>`).join("")}
+draw();
+</script>
+<footer>Built by <b>Nae Kitakado</b>, AI Automation Consultant · <a href="https://github.com/naekitakadoportfolio">GitHub</a> · <a href="https://www.linkedin.com/in/nae-k-203194265">LinkedIn</a> · <a href="https://sider.ai/agents/web-creator/share/695ea81100a621619985fdfb">Portfolio</a><br>All data is fictional. This demo runs entirely in your browser.</footer></div></body></html>
